@@ -1,16 +1,4 @@
 {
-    "posts": [
-        "This is a sample post 1",
-        "This is a sample post 2"
-    ],
-    "groups": [
-        "https://www.facebook.com/groups/python.pro.developers/",
-        "https://www.facebook.com/groups/727868424425895/",
-        "https://www.facebook.com/groups/2390323384538567/",
-        "https://www.facebook.com/groups/Python3Training/",
-        "https://www.facebook.com/groups/2630047207281086/",
-        "https://www.facebook.com/groups/pythonmx/",
-        "https://www.facebook.com/groups/217570322256751/",
-        "https://www.facebook.com/groups/developers.python/"
-    ]
+  "posts": ["Ejemplo"],
+  "groups": ["https://www.facebook.com/groups/python.pro.developers/"]
 }

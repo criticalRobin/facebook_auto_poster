@@ -1,6 +1,6 @@
 from scraper import Scraper
 
-keyword = "pyhon"
+keyword = "compra"
 
 scraper = Scraper()
 scraper.save_groups(keyword)

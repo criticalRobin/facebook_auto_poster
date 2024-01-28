@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from logs import logger
 from time import sleep
 from scraping_manager.automate import WebScraping
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 # Read env vars 
 load_dotenv ()
@@ -41,45 +44,37 @@ class Scraper (WebScraping):
             "submit": '[aria-label="Post"][role="button"], [aria-label="Publicar"][role="button"]',
         }
 
-        # Loop each group
         posts_done = []
         for group in self.json_data["groups"]:
             self.set_page(group)
-            sleep (5)
-            self.refresh_selenium()
+            wait = WebDriverWait(self.driver, 30)
             
-            # Get random post
-            post = random.choice (self.json_data["posts"])                
-            post_text = post["text"]
-            post_image = post.get("image", "")
-            
-            # Open text input
-            self.click_js (selectors["display_input"])
-            self.refresh_selenium()
-            
-            # Write text
+            # Wait for and open text input
             try:
-                self.send_data(selectors["input"], post_text)
-            except:
-                logger.error('Error writing text: "{post}" ({group})')
+                wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["display_input"]))).click()
+                post = random.choice(self.json_data["posts"])                
+                post_text = post["text"]
+                post_image = post.get("image", "")
+
+                # Find the input element and send post text
+                input_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["input"])))
+                input_element.send_keys(post_text)
+                
+                # Upload image if available
+                if post_image:
+                    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["show_image_input"]))).click()
+                    image_input = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, selectors["add_image"])))
+                    image_input.send_keys(post_image)
+                
+                # Submit post
+                wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, selectors["submit"]))).click()
+                sleep(WAIT_MIN * 60)
+                posts_done.append([group, post])
+                logger.info(f'Post done: "{post}" ({group})')
+
+            except Exception as e:
+                logger.error(f'Error in group {group}: {e}')
                 continue
-            
-            # Upload image
-            if post_image:
-                self.click_js(selectors["show_image_input"])
-                self.refresh_selenium()
-                self.send_data(selectors["add_image"], post_image)
-        
-            # submit
-            self.refresh_selenium()
-            self.click_js(selectors["submit"])
-            sleep (WAIT_MIN*60)
-            
-            # Save register of post
-            posts_done.append ([group, post])
-            
-            # Logs
-            logger.info (f'post done: "{post}" ({group})')
                 
     def save_groups (self, keyword):
         """ Sedarch already signed groups and save them in data file """
